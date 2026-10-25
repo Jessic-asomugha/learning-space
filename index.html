@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Learning Space</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: four study modes across the top (HTML, CSS, JavaScript, Full stack). Under the open mode, a saved-topics rail beside one workbench with labs, quizzes and knowledge checks. */
+:root{
+  --font-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --font-body:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --bg:#F3F5F9;
+  --surface:#FFFFFF;
+  --surface-2:#E7EBF3;
+  --fg:#131826;
+  --muted:#566074;
+  --line:#D2D8E4;
+  --accent:#3345C9;
+  --accent-ink:#FFFFFF;
+  --accent-soft:#E4E8FB;
+  --good:#1B7048;
+  --good-soft:#DDF1E6;
+  --bad:#B3261E;
+  --bad-soft:#FBE3E1;
+  --code-bg:#0F1522;
+  --code-fg:#DCE4F2;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D111B;--surface:#151B28;--surface-2:#1D2433;--fg:#E8ECF5;--muted:#929CB3;--line:#2A3347;
+    --accent:#8EA2FF;--accent-ink:#0B1030;--accent-soft:#1E2550;
+    --good:#4CC38A;--good-soft:#14301F;--bad:#FF8A80;--bad-soft:#3B1816;
+    --code-bg:#090D16;--code-fg:#DCE4F2;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D111B;--surface:#151B28;--surface-2:#1D2433;--fg:#E8ECF5;--muted:#929CB3;--line:#2A3347;
+  --accent:#8EA2FF;--accent-ink:#0B1030;--accent-soft:#1E2550;
+  --good:#4CC38A;--good-soft:#14301F;--bad:#FF8A80;--bad-soft:#3B1816;
+  --code-bg:#090D16;--code-fg:#DCE4F2;color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.55;
+  padding-block:calc(20px + env(safe-area-inset-top,0px)) calc(48px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.wrap{max-width:1120px;margin:0 auto}
+h1,h2,h3{font-family:var(--font-display);line-height:1.15;margin:0;text-wrap:balance}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.brand{font-family:var(--font-display);font-weight:700;font-size:26px;letter-spacing:-.01em}
+.status{margin-left:auto;display:inline-flex;gap:7px;align-items:center;font-size:12.5px;color:var(--muted)}
+.status i{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block}
+.status.ok i{background:var(--good)}
+.status.warn i{background:#C98A00}
+.status.no i{background:var(--bad)}
+.modes{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.mode{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 18px;font-weight:600;font-family:var(--font-display);font-size:16px}
+.mode:hover{border-color:var(--muted)}
+.mode[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.modenote{color:var(--muted);font-size:13.5px;margin:0 0 20px;max-width:70ch}
+.shell{display:grid;grid-template-columns:250px minmax(0,1fr);gap:28px;align-items:start}
+.rail{display:flex;flex-direction:column;gap:10px;min-width:0}
+.eyebrow{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;font-weight:500;min-height:38px}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.btn.small{padding:4px 10px;min-height:30px;font-size:13px}
+.btn.danger{color:var(--bad)}
+.tlist{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.topic{width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 12px;display:flex;flex-direction:column;gap:1px}
+.topic[aria-current="true"]{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.topic b{font-weight:600;font-size:14px;overflow-wrap:anywhere}
+.topic span{font-size:12px;color:var(--muted)}
+.note{font-size:12.5px;color:var(--muted);margin:0}
+.tools{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+main{min-width:0}
+.lead h2{font-size:30px;letter-spacing:-.015em;margin-bottom:8px}
+.lead p{color:var(--muted);max-width:60ch;margin:0 0 18px}
+.ask{display:flex;gap:8px;flex-wrap:wrap}
+.ask input{flex:1 1 260px;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 12px;min-height:42px;font-size:16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13px}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.notice{border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:10px 12px;font-size:13.5px;margin:0 0 14px;color:var(--fg)!important}
+.err{color:var(--bad);font-size:13.5px;margin:8px 0 0}
+.thead{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;margin-bottom:14px}
+.thead h2{font-size:28px;letter-spacing:-.015em;overflow-wrap:anywhere}
+.thead .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
+.tab{border:0;background:none;padding:9px 14px;border-bottom:3px solid transparent;margin-bottom:-1px;font-weight:500;color:var(--muted);white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
+.tab em{font-style:normal;font-family:var(--font-mono);font-size:12px;margin-left:6px;color:var(--muted)}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.bar .stat{font-size:13.5px;color:var(--muted);max-width:60ch}
+.bar .stat b{color:var(--fg);font-weight:600}
+.cards{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.card h3{font-size:19px;margin-bottom:6px}
+.card p{margin:0 0 10px}
+.done{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:6px}
+.done label{display:flex;gap:9px;align-items:flex-start;cursor:pointer}
+.done input{margin-top:5px;accent-color:var(--accent)}
+.done input:checked+span{color:var(--muted);text-decoration:line-through}
+.code{margin-bottom:10px}
+.codehead{display:flex;justify-content:space-between;align-items:center;background:var(--code-bg);border-radius:8px 8px 0 0;padding:6px 8px 6px 12px;border-bottom:1px solid #26304a}
+.codehead span{font-family:var(--font-mono);font-size:12px;color:#8F9FBB}
+.codehead .btn{background:transparent;color:#DCE4F2;border-color:#33405c}
+pre{margin:0;background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;line-height:1.6;padding:12px;border-radius:0 0 8px 8px;overflow-x:auto;tab-size:2}
+details{margin-top:10px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2)}
+details>summary{cursor:pointer;padding:8px 12px;font-weight:500;font-size:14px}
+details>div{padding:0 12px 12px}
+details pre{border-radius:8px}
+.bugs{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px}
+.bugs b{font-family:var(--font-mono);font-size:12.5px;font-weight:500}
+.q{font-weight:500;margin:0 0 10px;white-space:pre-wrap;overflow-wrap:anywhere}
+.qn{font-family:var(--font-mono);font-size:12px;color:var(--muted);margin-right:8px}
+.opts{display:flex;flex-direction:column;gap:7px}
+.opt{display:flex;gap:10px;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 12px;min-height:40px;align-items:flex-start}
+.opt:hover:not([disabled]){border-color:var(--muted)}
+.opt i{font-style:normal;font-family:var(--font-mono);font-size:12.5px;color:var(--muted);padding-top:1px}
+.opt span{white-space:pre-wrap;overflow-wrap:anywhere;min-width:0}
+.opt.good{background:var(--good-soft);border-color:var(--good)}
+.opt.bad{background:var(--bad-soft);border-color:var(--bad)}
+.opt[disabled]{cursor:default;color:var(--fg)}
+.why{margin:10px 0 0;font-size:14px;color:var(--muted)}
+.ans{background:var(--accent-soft);border-radius:8px;padding:10px 12px;margin:0 0 10px;white-space:pre-wrap}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.wait{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--accent);animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.25}50%{opacity:1}}
+.empty{border:1px dashed var(--line);border-radius:10px;padding:26px 18px;text-align:center;color:var(--muted)}
+.empty p{margin:0}
+.lock{max-width:420px}
+@media (prefers-reduced-motion:reduce){.dot{animation:none}}
+@media (max-width:780px){
+  .shell{grid-template-columns:minmax(0,1fr);gap:18px}
+  .tlist{flex-direction:row;overflow-x:auto;padding-bottom:4px}
+  .tlist li{flex:0 0 170px}
+  .lead h2,.thead h2{font-size:25px}
+  .status{margin-left:0;width:100%}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Learning Space</div>
+    <div class="status" id="status" role="status"><i></i><span>Connecting</span></div>
+  </div>
+  <div class="modes" id="modes" role="group" aria-label="Study mode"></div>
+  <p class="modenote" id="modenote"></p>
+  <div class="shell">
+    <aside class="rail" id="rail"></aside>
+    <main id="main"></main>
+  </div>
+</div>
+
+<script>
+(function(){
+  var BASE = "The learner is a computer science graduate taking a Coursera AWS Web Developer professional course. Keep everything practical, accurate and concise. ";
+  var TRACKS = {
+    html: { label:"HTML", note:"Structure, forms, semantics and accessibility.",
+      focus:"Focus only on HTML: semantic structure, forms, input types, tables, links, media and accessibility. Do not depend on CSS or JavaScript.",
+      suggest:["Semantic page structure","Forms and input types","Accessible tables","Images and figures","Links and navigation"] },
+    css: { label:"CSS", note:"Selectors, layout, responsive design and styling.",
+      focus:"Focus only on CSS: selectors, the box model, flexbox, grid, positioning, responsive design, variables and transitions. Any HTML supplied should be small and only there to be styled.",
+      suggest:["Flexbox layout","CSS Grid","Responsive design with media queries","CSS variables","Positioning"] },
+    js: { label:"JavaScript", note:"The language, the DOM, events, async code and Node.js.",
+      focus:"Focus on JavaScript: language fundamentals, the DOM, events, form handling, fetch and async/await, arrays and objects, and basic Node.js. Any HTML supplied should be small and only there to be scripted.",
+      suggest:["DOM events","Form validation","Fetch and async/await","Arrays and objects","Local storage"] },
+    full: { label:"Full stack", note:"A page with HTML, CSS and JavaScript together and bugs hidden across all three. Find them and fix them.",
+      focus:"Combine HTML, CSS and JavaScript on one small page. The learner's job is to debug: spot and fix problems that come from the three working together.",
+      suggest:["Sign-up form that will not submit","Todo list that loses items","Dropdown menu that will not close","Image gallery with a broken lightbox","Dark mode toggle that does not stick"] }
+  };
+  var ORDER = ["html", "css", "js", "full"];
+  var LETTERS = ["A","B","C","D"];
+  var PW_KEY = "ls_password", MIRROR_KEY = "ls_topics";
+
+  function kindText(kind, track){
+    var full = track === "full";
+    if (kind === "labs") return full
+      ? { label:"Debug labs", first:"Generate a debug lab", more:"Add another debug lab", empty:"No debug labs yet for this topic.", stat:"Each lab is a page that looks finished but has bugs spread across the HTML, CSS and JavaScript. The bug list stays hidden until you open it." }
+      : { label:"Labs", first:"Generate a lab", more:"Add another lab", empty:"No labs yet for this topic.", stat:"Starter code has gaps for you to fill in. The solution stays hidden until you open it." };
+    if (kind === "quiz") return { label:"Quizzes", first:"Generate questions", more:"Add 8 more questions", empty:"No quiz questions yet for this topic.", stat:"" };
+    return { label:"Knowledge checks", first:"Generate cards", more:"Add 8 more cards", empty:"No knowledge checks yet for this topic.", stat:"" };
+  }
+
+  /* mode: checking | remote (database) | local (this device only) | locked | down */
+  var store = { mode:"checking", pending:0 };
+  var state = { topics:new Map(), cur:null, busy:{}, err:{}, formErr:"", pwErr:"" };
+  var ui = { track:"html", tab:"labs", draft:"", pwDraft:"", ans:{}, flip:{}, grade:{}, done:{}, open:new Set(), confirmDel:false };
+  var queues = {};
+  var genChain = Promise.resolve();
+
+  function h(tag, attrs){
+    var el = document.createElement(tag);
+    var a = attrs || {};
+    Object.keys(a).forEach(function(k){
+      var v = a[k];
+      if (k === "class") el.className = v;
+      else if (k.indexOf("on") === 0) el.addEventListener(k.slice(2), v);
+      else if (v === true) el.setAttribute(k, "");
+      else if (v !== false && v != null) el.setAttribute(k, v);
+    });
+    for (var i = 2; i < arguments.length; i++) {
+      var kids = [].concat(arguments[i]);
+      for (var j = 0; j < kids.length; j++) {
+        var c = kids[j];
+        if (c == null || c === false) continue;
+        el.append(c.nodeType ? c : document.createTextNode(String(c)));
+      }
+    }
+    return el;
+  }
+
+  /* ---------- server calls ---------- */
+  function getPw(){ try { return localStorage.getItem(PW_KEY) || ""; } catch (e) { return ""; } }
+  function setPw(v){ try { localStorage.setItem(PW_KEY, v); } catch (e) {} }
+  function headers(json){
+    var o = { "x-app-password": getPw() };
+    if (json) o["Content-Type"] = "application/json";
+    return o;
+  }
+  async function call(url, opts){
+    var r = await fetch(url, opts);
+    var j = null;
+    try { j = await r.json(); } catch (e) {}
+    return { status:r.status, ok:r.ok, json:j };
+  }
+
+  function errCopy(e){
+    var c = (e && e.code) || "unknown";
+    var m;
+    if (c === "unauthorized") m = "The access password is missing or wrong. Reload the page and enter it again.";
+    else if (c === "rate_limited") m = "Groq's limit was reached. It allows only a few requests per minute, plus about 1,000 a day. Wait " + (e.retry || 60) + " seconds, then press the button again.";
+    else if (c === "server_not_configured") m = "The server is missing a setting. Check GROQ_API_KEY and APP_PASSWORD in the Vercel project settings.";
+    else if (c === "groq_key_rejected") m = "Groq rejected the API key. Check GROQ_API_KEY in the Vercel project settings.";
+    else if (c === "bad_output" || c === "invalid_json") m = "The answer came back unusable. Press the button to try again.";
+    else if (c === "timeout") m = "Groq took too long to answer. Press the button to try again.";
+    else if (c === "network") m = "Could not reach the server. Check your connection and try again.";
+    else if (c === "save") return "Generated, but it could not be saved online. It is kept on this device for now.";
+    else m = "Something went wrong while generating. Try again.";
+    return m + " (code: " + c + ")";
+  }
+
+  function parseJson(text){
+    try { return JSON.parse(text); } catch (e) {}
+    var s = String(text), a = s.indexOf("{"), b = s.lastIndexOf("}");
+    if (a >= 0 && b > a) { try { return JSON.parse(s.slice(a, b + 1)); } catch (e) {} }
+    throw { code:"invalid_json" };
+  }
+  async function ask(prompt){
+    var r;
+    try { r = await call("/api/generate", { method:"POST", headers:headers(true), body:JSON.stringify({ prompt:prompt }) }); }
+    catch (e) { throw { code:"network" }; }
+    if (!r.ok) throw { code:(r.json && r.json.error) || ("http_" + r.status), retry:r.json && r.json.retryAfter };
+    if (!r.json || typeof r.json.text !== "string") throw { code:"bad_output" };
+    return parseJson(r.json.text);
+  }
+
+  /* ---------- storage ---------- */
+  function mirror(){
+    try { localStorage.setItem(MIRROR_KEY, JSON.stringify(Array.from(state.topics.values()))); } catch (e) {}
+  }
+  function readMirror(){
+    try {
+      var arr = JSON.parse(localStorage.getItem(MIRROR_KEY) || "[]");
+      return Array.isArray(arr) ? arr.filter(function(t){ return t && t.id; }) : [];
+    } catch (e) { return []; }
+  }
+  function strip(t){ var o = {}; Object.keys(t).forEach(function(k){ if (k !== "id") o[k] = t[k]; }); return o; }
+  function trackOf(t){ return TRACKS[t.track] ? t.track : "js"; }
+
+  function pushTopic(id){
+    var t = state.topics.get(id);
+    if (!t || store.mode !== "remote") return Promise.resolve();
+    store.pending++;
+    var p = (queues[id] || Promise.resolve()).then(function(){
+      var cur = state.topics.get(id);
+      if (!cur) return;
+      return call("/api/topics?id=" + encodeURIComponent(id), { method:"PUT", headers:headers(true), body:JSON.stringify(strip(cur)) })
+        .then(function(r){ if (!r.ok) throw new Error("save"); });
+    });
+    queues[id] = p.catch(function(){});
+    return p.finally(function(){ store.pending--; });
+  }
+  function touch(id){
+    var t = state.topics.get(id);
+    if (!t) return Promise.resolve();
+    t.updatedAt = Date.now();
+    mirror();
+    return pushTopic(id);
+  }
+  async function removeTopicRemote(id){
+    if (store.mode !== "remote") return;
+    store.pending++;
+    try { await call("/api/topics?id=" + encodeURIComponent(id), { method:"DELETE", headers:headers(false) }); }
+    catch (e) {}
+    finally { store.pending--; }
+  }
+
+  async function loadRemote(silent){
+    var r;
+    try { r = await call("/api/topics", { headers:headers(false) }); }
+    catch (e) { if (!silent) { store.mode = "local"; fallbackLocal(); } return; }
+    if (r.status === 401) { if (!silent) store.mode = "locked"; return; }
+    if (r.status === 501) { store.mode = "local"; if (!silent) fallbackLocal(); return; }
+    if (!r.ok || !r.json || !Array.isArray(r.json.topics)) { if (!silent) { store.mode = "down"; fallbackLocal(); } return; }
+    store.mode = "remote";
+    var remote = r.json.topics;
+    if (!silent && !remote.length) {
+      var local = readMirror();
+      if (local.length) {
+        state.topics = new Map(local.map(function(t){ return [t.id, t]; }));
+        state.topics.forEach(function(t, id){ pushTopic(id).catch(function(){}); });
+        return;
+      }
+    }
+    state.topics = new Map(remote.map(function(t){ return [t.id, t]; }));
+    mirror();
+  }
+  function fallbackLocal(){
+    state.topics = new Map(readMirror().map(function(t){ return [t.id, t]; }));
+  }
+
+  /* ---------- generation ---------- */
+  function haveList(kind, t){
+    var items = t[kind] || [];
+    if (!items.length) return "";
+    var names = items.slice(-30).map(function(x){ return String(x.title || x.q).slice(0, 100); });
+    return "\n\nAlready covered, do not repeat or closely rephrase these: " + names.join(" | ");
+  }
+  function shape(n){
+    return 'Reply with only a JSON object of the form {"items": [...]} where "items" is an array of ' + n + (n === 1 ? " object" : " objects") + " with these fields: ";
+  }
+  function buildPrompt(kind, t){
+    var tr = trackOf(t), T = TRACKS[tr];
+    var base = BASE + T.focus + "\n\nTopic: " + t.name + "\n\n";
+    if (kind === "labs" && tr === "full") return base +
+      "Write 1 debugging lab. The page should look finished and mostly work, but contain 3 to 5 realistic bugs spread across the HTML, the CSS and the JavaScript, including at least one bug that only appears because two of them interact (for example a class name or id that does not match). Each file is at most 40 lines. Doable in 15 to 25 minutes. " + shape(1) +
+      '"title" (string), "scenario" (2 short sentences: what the page should do and what is going wrong, without revealing the cause), "tasks" (array of 3 to 5 short strings, each a symptom that must be fixed), ' +
+      '"html" (the full buggy HTML for the body only), "css" (the full buggy CSS), "js" (the full buggy JavaScript), "hint" (one sentence), "bugs" (array of objects {"file": "html" or "css" or "js", "problem": string, "fix": string}). ' +
+      "Use \\n for line breaks inside strings." + haveList(kind, t);
+    if (kind === "labs") return base +
+      "Write 1 hands-on practice lab. The learner works in their own editor, so make it doable in 15 to 25 minutes. " + shape(1) +
+      '"title" (string), "scenario" (2 short sentences), "tasks" (array of 3 to 5 short strings saying what must work when finished), "language" (' + (tr === "html" ? '"html"' : tr === "css" ? '"css"' : '"javascript"') + "), " +
+      '"markup" (supporting HTML the learner is given, at most 20 lines; use an empty string for an HTML lab), ' +
+      '"starter" (a skeleton of at most 35 lines with TODO comments where the learner writes the real work; the solution must NOT appear in it), "hint" (one sentence), "solution" (the full working code for the starter). ' +
+      "Use \\n for line breaks inside strings." + haveList(kind, t);
+    if (kind === "quiz") return base +
+      "Write 8 multiple-choice questions that test understanding, not trivia" + (tr === "full" ? ", for example spotting the bug in a short snippet or predicting what a page does" : "") + ". " + shape(8) +
+      '"q" (string; a short code snippet may be included using \\n), "options" (array of exactly 4 short strings), "answer" (index 0 to 3 of the correct option; vary the position), "why" (one sentence explaining the answer).' + haveList(kind, t);
+    return base +
+      "Write 8 short knowledge-check cards for recall: a question on one side, a brief answer (at most 2 sentences) on the other. " + shape(8) + '"q" (string) and "a" (string).' + haveList(kind, t);
+  }
+  function str(v){ return typeof v === "string" && v.trim().length > 0; }
+  function clean(kind, tr, data){
+    if (!Array.isArray(data)) data = (data && Array.isArray(data.items)) ? data.items : [];
+    if (kind === "labs" && tr === "full") return data.filter(function(x){ return x && str(x.title) && str(x.js) && (str(x.html) || str(x.css)) && Array.isArray(x.tasks); }).map(function(x){
+      return { title:String(x.title), scenario:String(x.scenario || ""), tasks:x.tasks.map(String).slice(0, 6), html:String(x.html || ""), css:String(x.css || ""), js:String(x.js),
+        hint:String(x.hint || ""), bugs:(Array.isArray(x.bugs) ? x.bugs : []).filter(function(b){ return b && str(b.problem); }).map(function(b){ return { file:String(b.file || ""), problem:String(b.problem), fix:String(b.fix || "") }; }) };
+    });
+    if (kind === "labs") return data.filter(function(x){ return x && str(x.title) && str(x.starter) && Array.isArray(x.tasks); }).map(function(x){
+      return { title:String(x.title), scenario:String(x.scenario || ""), tasks:x.tasks.map(String).slice(0, 6), language:String(x.language || "code"), markup:String(x.markup || ""), starter:String(x.starter), hint:String(x.hint || ""), solution:String(x.solution || "") };
+    });
+    if (kind === "quiz") return data.filter(function(x){ return x && str(x.q) && Array.isArray(x.options) && x.options.length >= 2 && Number.isInteger(x.answer); }).map(function(x){
+      return { q:String(x.q), options:x.options.slice(0, 4).map(String), answer:x.answer, why:String(x.why || "") };
+    }).filter(function(x){ return x.answer >= 0 && x.answer < x.options.length; });
+    return data.filter(function(x){ return x && str(x.q) && str(x.a); }).map(function(x){ return { q:String(x.q), a:String(x.a) }; });
+  }
+  /* One request at a time: Groq limits tokens per minute, so requests wait their turn. */
+  function gen(id, kind){
+    var key = id + ":" + kind;
+    var t = state.topics.get(id);
+    if (!t || store.mode === "locked" || state.busy[key]) return Promise.resolve();
+    state.busy[key] = true; delete state.err[key]; render();
+    var job = genChain.then(async function(){
+      try {
+        var cur = state.topics.get(id);
+        if (!cur) return;
+        var data = await ask(buildPrompt(kind, cur));
+        var items = clean(kind, trackOf(cur), data);
+        if (!items.length) throw { code:"invalid_json" };
+        var again = state.topics.get(id);
+        if (!again) return;
+        again[kind] = (again[kind] || []).concat(items);
+        touch(id).catch(function(){ state.err[key] = errCopy({ code:"save" }); render(); });
+      } catch (e) {
+        state.err[key] = errCopy(e);
+      } finally {
+        delete state.busy[key]; render();
+      }
+    });
+    genChain = job.catch(function(){});
+    return job;
+  }
+  function newId(){ return "t" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function startTopic(raw){
+    var name = String(raw || "").trim().slice(0, 80);
+    if (!name) return;
+    if (store.mode === "locked") return;
+    var lower = name.toLowerCase();
+    var found = null;
+    state.topics.forEach(function(t){ if (trackOf(t) === ui.track && String(t.name).toLowerCase() === lower) found = t; });
+    if (found) { openTopic(found.id); return; }
+    var id = newId();
+    var t = { id:id, name:name, track:ui.track, createdAt:Date.now(), updatedAt:Date.now(), labs:[], quiz:[], checks:[] };
+    state.topics.set(id, t);
+    state.cur = id; ui.tab = "labs"; ui.draft = ""; state.formErr = ""; ui.confirmDel = false;
+    mirror();
+    render();
+    pushTopic(id).catch(function(){ state.err[id + ":save"] = "This topic could not be saved online. It is kept on this device for now."; render(); });
+    gen(id, "labs");
+  }
+  function openTopic(id){ state.cur = id; ui.confirmDel = false; render(); }
+  function deleteTopic(id){
+    state.topics.delete(id);
+    if (state.cur === id) state.cur = null;
+    ui.confirmDel = false;
+    mirror();
+    render();
+    removeTopicRemote(id);
+  }
+  function openTab(t, k){
+    ui.tab = k;
+    render();
+    if ((k === "quiz" || k === "checks") && !(t[k] || []).length && !state.busy[t.id + ":" + k] && !state.err[t.id + ":" + k]) gen(t.id, k);
+  }
+
+  /* ---------- backup ---------- */
+  function exportTopics(){
+    var data = JSON.stringify({ app:"learning-space", exportedAt:new Date().toISOString(), topics:Array.from(state.topics.values()) }, null, 2);
+    var url = URL.createObjectURL(new Blob([data], { type:"application/json" }));
+    var a = h("a", { href:url, download:"learning-space-backup.json" });
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+  }
+  function importTopics(file){
+    if (!file) return;
+    var rd = new FileReader();
+    rd.onload = function(){
+      try {
+        var obj = JSON.parse(String(rd.result));
+        var list = Array.isArray(obj) ? obj : obj.topics;
+        if (!Array.isArray(list)) throw new Error("shape");
+        var added = 0;
+        list.forEach(function(t){
+          if (!t || !str(t.name)) return;
+          var id = (t.id && !state.topics.has(t.id)) ? String(t.id).replace(/[^A-Za-z0-9_-]/g, "").slice(0, 40) : newId();
+          if (!id || state.topics.has(id)) id = newId();
+          var copy = Object.assign({}, t, { id:id, updatedAt:Date.now(), labs:t.labs || [], quiz:t.quiz || [], checks:t.checks || [] });
+          state.topics.set(id, copy); pushTopic(id).catch(function(){}); added++;
+        });
+        mirror();
+        state.formErr = added + " topic" + (added === 1 ? "" : "s") + " restored.";
+      } catch (e) { state.formErr = "That file could not be read as a Learning Space backup."; }
+      render();
+    };
+    rd.readAsText(file);
+  }
+
+  /* ---------- views ---------- */
+  function counts(t){
+    var l = (t.labs || []).length;
+    return l + (trackOf(t) === "full" ? " debug lab" : " lab") + (l === 1 ? "" : "s") + " · " + (t.quiz || []).length + " questions · " + (t.checks || []).length + " cards";
+  }
+  var STATUS = {
+    checking:["", "Connecting"],
+    remote:["ok", "Saved online, synced across devices"],
+    local:["warn", "Saved on this device only (database not set up)"],
+    locked:["warn", "Locked"],
+    down:["no", "Server not reachable, using this device only"]
+  };
+  function renderChrome(){
+    var st = document.getElementById("status");
+    var s = STATUS[store.mode] || STATUS.checking;
+    st.className = "status " + s[0];
+    st.querySelector("span").textContent = s[1];
+    var modes = document.getElementById("modes");
+    modes.replaceChildren();
+    ORDER.forEach(function(k){
+      modes.append(h("button", { class:"mode", type:"button", "aria-pressed":String(ui.track === k), onclick:function(){
+        if (ui.track === k) return;
+        ui.track = k; state.cur = null; ui.tab = "labs"; ui.confirmDel = false; ui.draft = ""; state.formErr = ""; render();
+      } }, TRACKS[k].label));
+    });
+    document.getElementById("modenote").textContent = TRACKS[ui.track].note;
+  }
+  function renderRail(){
+    var rail = document.getElementById("rail");
+    rail.replaceChildren();
+    rail.append(h("button", { class:"btn" + (state.cur ? "" : " primary"), onclick:function(){ state.cur = null; ui.confirmDel = false; render(); } }, "New " + TRACKS[ui.track].label + " topic"));
+    rail.append(h("div", { class:"eyebrow" }, "Saved " + TRACKS[ui.track].label + " topics"));
+    var list = Array.from(state.topics.values()).filter(function(t){ return trackOf(t) === ui.track; }).sort(function(a, b){ return (b.createdAt || 0) - (a.createdAt || 0); });
+    if (!list.length) rail.append(h("p", { class:"note" }, "Topics you generate in this mode are saved here so you can come back and add to them."));
+    else rail.append(h("ul", { class:"tlist" }, list.map(function(t){
+      return h("li", null, h("button", { class:"topic", "aria-current":String(t.id === state.cur), onclick:function(){ openTopic(t.id); } }, h("b", null, t.name), h("span", null, counts(t))));
+    })));
+    var fileInput = h("input", { type:"file", id:"restore-file", accept:"application/json,.json", hidden:true, onchange:function(ev){ importTopics(ev.target.files[0]); ev.target.value = ""; } });
+    rail.append(h("div", { class:"tools" },
+      h("button", { class:"btn small", type:"button", onclick:exportTopics, disabled:!state.topics.size }, "Back up"),
+      h("button", { class:"btn small", type:"button", onclick:function(){ fileInput.click(); } }, "Restore"),
+      fileInput));
+  }
+
+  function renderLocked(main){
+    var wrongPw = !!state.pwErr;
+    main.append(h("section", { class:"lead lock" },
+      h("h2", null, "Enter your password"),
+      h("p", null, "This is the access password you set in Vercel as APP_PASSWORD. It is saved on this device, so you only enter it once per device."),
+      h("form", { class:"ask", onsubmit:async function(ev){
+        ev.preventDefault();
+        if (!ui.pwDraft.trim()) return;
+        setPw(ui.pwDraft.trim()); ui.pwDraft = ""; state.pwErr = "";
+        store.mode = "checking"; render();
+        await init(true);
+        if (store.mode === "locked") state.pwErr = "That password was not accepted.";
+        render();
+      } },
+        h("input", { id:"pw-input", type:"password", placeholder:"Access password", "aria-label":"Access password", autocomplete:"current-password", value:ui.pwDraft, oninput:function(ev){ ui.pwDraft = ev.target.value; } }),
+        h("button", { class:"btn primary", type:"submit" }, "Unlock")),
+      wrongPw ? h("p", { class:"err", role:"alert" }, state.pwErr) : null));
+  }
+
+  function renderNew(main){
+    var T = TRACKS[ui.track];
+    var canGen = store.mode !== "checking";
+    var form = h("form", { class:"ask", onsubmit:function(ev){ ev.preventDefault(); startTopic(ui.draft); } },
+      h("input", { id:"topic-input", type:"text", maxlength:"80", placeholder:"For example: " + T.suggest[0].toLowerCase(), "aria-label":"Topic", value:ui.draft, autocomplete:"off",
+        oninput:function(ev){ ui.draft = ev.target.value; } }),
+      h("button", { class:"btn primary", type:"submit", disabled:!canGen }, canGen ? "Generate" : "Connecting"));
+    main.append(h("section", { class:"lead" },
+      h("h2", null, ui.track === "full" ? "What do you want to debug?" : "What do you want to practise?"),
+      h("p", null, ui.track === "full"
+        ? "Type a topic. You get one debug lab first (a page with HTML, CSS and JavaScript and bugs to find). The quiz questions and knowledge-check cards are written when you open their tabs."
+        : "Type a " + T.label + " topic. You get one hands-on lab first, with starter code that has gaps to fill in. The quiz questions and knowledge-check cards are written when you open their tabs."),
+      store.mode === "local" ? h("p", { class:"notice" }, "The database is not set up yet, so topics are saved only in this browser. Connect an Upstash Redis database in Vercel to sync across devices.") : null,
+      form,
+      state.formErr ? h("p", { class:/restored/.test(state.formErr) ? "note" : "err", role:"alert" }, state.formErr) : null,
+      h("div", { class:"chips" }, T.suggest.map(function(s){
+        return h("button", { class:"chip", type:"button", onclick:function(){ ui.draft = s; render(); var i = document.getElementById("topic-input"); if (i) i.focus(); } }, s);
+      }))
+    ));
+  }
+
+  function tabsBar(t){
+    var tr = trackOf(t);
+    return h("div", { class:"tabs", role:"tablist" }, ["labs", "quiz", "checks"].map(function(k){
+      return h("button", { class:"tab", role:"tab", id:"tab-" + k, "aria-selected":String(ui.tab === k), onclick:function(){ openTab(t, k); } },
+        kindText(k, tr).label, h("em", null, String((t[k] || []).length)));
+    }));
+  }
+  function addBar(t, kind, statNode){
+    var key = t.id + ":" + kind, tx = kindText(kind, trackOf(t));
+    var busy = !!state.busy[key];
+    var has = (t[kind] || []).length > 0;
+    return h("div", null,
+      h("div", { class:"bar" },
+        h("div", { class:"stat" }, statNode || ""),
+        h("div", { class:"actions" },
+          busy ? h("span", { class:"wait", role:"status" }, h("span", { class:"dot" }), "Writing, this can take up to a minute") : null,
+          h("button", { class:"btn" + (has ? "" : " primary"), disabled:busy, onclick:function(){ delete state.err[key]; gen(t.id, kind); } }, has ? tx.more : tx.first))),
+      state.err[key] ? h("p", { class:"err", role:"alert" }, state.err[key]) : null);
+  }
+  function emptyBox(t, kind, busy){
+    return h("div", { class:"empty" }, h("p", null, busy ? "Writing the first set for this topic." : kindText(kind, trackOf(t)).empty));
+  }
+
+  async function copyText(text, btn, pre){
+    var old = btn.textContent;
+    try { await navigator.clipboard.writeText(text); btn.textContent = "Copied"; }
+    catch (e) {
+      try { var r = document.createRange(); r.selectNodeContents(pre); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = "Selected"; }
+      catch (e2) { btn.textContent = "Select manually"; }
+    }
+    setTimeout(function(){ btn.textContent = old; }, 1600);
+  }
+  function codeBlock(text, label){
+    var pre = h("pre", null, h("code", null, text));
+    var btn = h("button", { class:"btn small", type:"button" }, "Copy");
+    btn.addEventListener("click", function(){ copyText(text, btn, pre); });
+    return h("div", { class:"code" }, h("div", { class:"codehead" }, h("span", null, label), btn), pre);
+  }
+  function details(openKey, summary, content){
+    var d = h("details", { open:ui.open.has(openKey) }, h("summary", null, summary), h("div", null, content));
+    d.addEventListener("toggle", function(){ if (d.open) ui.open.add(openKey); else ui.open.delete(openKey); });
+    return d;
+  }
+  var FILES = { html:"index.html", css:"styles.css", js:"script.js" };
+
+  function panelLabs(t){
+    var key = t.id + ":labs", labs = t.labs || [], tr = trackOf(t);
+    var kids = [addBar(t, "labs", kindText("labs", tr).stat)];
+    if (!labs.length) { kids.push(emptyBox(t, "labs", state.busy[key])); return kids; }
+    kids.push(h("div", { class:"cards" }, labs.map(function(lab, i){
+      var tasksLabel = tr === "full" ? "Fixed when" : "Done when";
+      var body = [
+        h("h3", null, lab.title),
+        lab.scenario ? h("p", null, lab.scenario) : null,
+        h("div", { class:"eyebrow", style:"margin-bottom:6px" }, tasksLabel),
+        h("ul", { class:"done" }, lab.tasks.map(function(task, j){
+          var dk = t.id + ":" + i + ":" + j;
+          return h("li", null, h("label", null,
+            h("input", { type:"checkbox", checked:!!ui.done[dk], onchange:function(ev){ ui.done[dk] = ev.target.checked; render(); } }),
+            h("span", null, task)));
+        }))
+      ];
+      if (tr === "full") {
+        ["html", "css", "js"].forEach(function(f){ if (lab[f]) body.push(codeBlock(lab[f], FILES[f])); });
+        if (lab.hint) body.push(details(t.id + ":h" + i, "Hint", h("p", { style:"margin:0" }, lab.hint)));
+        if (lab.bugs && lab.bugs.length) body.push(details(t.id + ":s" + i, "Reveal the bugs (" + lab.bugs.length + ")",
+          h("ol", { class:"bugs" }, lab.bugs.map(function(b){ return h("li", null, h("b", null, (FILES[b.file] || b.file || "code") + ": "), b.problem, b.fix ? " Fix: " + b.fix : ""); }))));
+      } else {
+        if (lab.markup) body.push(codeBlock(lab.markup, "index.html (given)"));
+        body.push(codeBlock(lab.starter, "starter " + lab.language));
+        if (lab.hint) body.push(details(t.id + ":h" + i, "Hint", h("p", { style:"margin:0" }, lab.hint)));
+        if (lab.solution) body.push(details(t.id + ":s" + i, "Show solution", codeBlock(lab.solution, "solution " + lab.language)));
+      }
+      return h("article", { class:"card" }, body);
+    })));
+    return kids;
+  }
+
+  function panelQuiz(t){
+    var key = t.id + ":quiz", qs = t.quiz || [];
+    var A = ui.ans[t.id] || (ui.ans[t.id] = {});
+    var answered = 0, right = 0;
+    qs.forEach(function(q, i){ if (A[i] != null) { answered++; if (A[i] === q.answer) right++; } });
+    var stat = qs.length ? h("span", null, "Answered ", h("b", null, answered + " of " + qs.length), " · Correct ", h("b", null, String(right))) : "Pick an answer to see it marked straight away.";
+    var kids = [addBar(t, "quiz", stat)];
+    if (!qs.length) { kids.push(emptyBox(t, "quiz", state.busy[key])); return kids; }
+    kids.push(h("div", { class:"cards" }, qs.map(function(q, i){
+      var picked = A[i], locked = picked != null;
+      return h("article", { class:"card" },
+        h("p", { class:"q" }, h("span", { class:"qn" }, "Q" + (i + 1)), q.q),
+        h("div", { class:"opts" }, q.options.map(function(o, k){
+          var cls = "opt", mark = "";
+          if (locked && k === q.answer) { cls += " good"; mark = " (correct)"; }
+          else if (locked && k === picked) { cls += " bad"; mark = " (your answer)"; }
+          return h("button", { class:cls, type:"button", disabled:locked, onclick:function(){ A[i] = k; render(); } }, h("i", null, LETTERS[k]), h("span", null, o + mark));
+        })),
+        locked && q.why ? h("p", { class:"why" }, q.why) : null);
+    })));
+    if (answered) kids.push(h("div", { class:"actions", style:"margin-top:14px" }, h("button", { class:"btn", onclick:function(){ ui.ans[t.id] = {}; render(); } }, "Reset answers")));
+    return kids;
+  }
+
+  function panelChecks(t){
+    var key = t.id + ":checks", cs = t.checks || [];
+    var F = ui.flip[t.id] || (ui.flip[t.id] = {});
+    var G = ui.grade[t.id] || (ui.grade[t.id] = {});
+    var got = 0, again = 0;
+    cs.forEach(function(c, i){ if (G[i] === "got") got++; else if (G[i] === "again") again++; });
+    var stat = cs.length ? h("span", null, "Got it ", h("b", null, String(got)), " · Review again ", h("b", null, String(again)), " · Not rated ", h("b", null, String(cs.length - got - again))) : "Answer in your head first, then reveal the card.";
+    var kids = [addBar(t, "checks", stat)];
+    if (!cs.length) { kids.push(emptyBox(t, "checks", state.busy[key])); return kids; }
+    kids.push(h("div", { class:"cards" }, cs.map(function(c, i){
+      var shown = !!F[i];
+      return h("article", { class:"card" },
+        h("p", { class:"q" }, h("span", { class:"qn" }, "Card " + (i + 1)), c.q),
+        shown ? h("p", { class:"ans" }, c.a) : null,
+        h("div", { class:"actions" },
+          !shown ? h("button", { class:"btn", onclick:function(){ F[i] = true; render(); } }, "Show answer") : [
+            h("button", { class:"btn small", "aria-pressed":String(G[i] === "got"), onclick:function(){ G[i] = "got"; render(); } }, G[i] === "got" ? "Got it (rated)" : "Got it"),
+            h("button", { class:"btn small", "aria-pressed":String(G[i] === "again"), onclick:function(){ G[i] = "again"; render(); } }, G[i] === "again" ? "Review again (rated)" : "Review again"),
+            h("button", { class:"btn small", onclick:function(){ F[i] = false; render(); } }, "Hide")
+          ]));
+    })));
+    if (got || again) kids.push(h("div", { class:"actions", style:"margin-top:14px" }, h("button", { class:"btn", onclick:function(){ ui.grade[t.id] = {}; ui.flip[t.id] = {}; render(); } }, "Reset cards")));
+    return kids;
+  }
+
+  function renderTopic(main, t){
+    var delRow = ui.confirmDel
+      ? h("div", { class:"row" }, h("span", { class:"note" }, "Delete this topic and everything in it?"),
+          h("button", { class:"btn small danger", onclick:function(){ deleteTopic(t.id); } }, "Delete"),
+          h("button", { class:"btn small", onclick:function(){ ui.confirmDel = false; render(); } }, "Keep"))
+      : h("div", { class:"row" }, h("button", { class:"btn small", onclick:function(){ ui.confirmDel = true; render(); } }, "Delete topic"));
+    main.append(
+      h("div", { class:"thead" }, h("div", null, h("div", { class:"eyebrow" }, TRACKS[trackOf(t)].label + " topic"), h("h2", null, t.name)), delRow),
+      state.err[t.id + ":save"] ? h("p", { class:"err" }, state.err[t.id + ":save"]) : null,
+      tabsBar(t),
+      h("div", { role:"tabpanel", "aria-labelledby":"tab-" + ui.tab }, ui.tab === "labs" ? panelLabs(t) : ui.tab === "quiz" ? panelQuiz(t) : panelChecks(t)));
+  }
+
+  function render(){
+    var ae = document.activeElement;
+    var focusId = ae && ae.id ? ae.id : null;
+    var selStart = null, selEnd = null;
+    if (focusId === "topic-input" || focusId === "pw-input") { selStart = ae.selectionStart; selEnd = ae.selectionEnd; }
+    var main = document.getElementById("main");
+    main.replaceChildren();
+    var t = state.cur ? state.topics.get(state.cur) : null;
+    if (t && trackOf(t) !== ui.track) t = null;
+    if (state.cur && !t) state.cur = null;
+    renderChrome();
+    if (store.mode === "locked") renderLocked(main);
+    else if (t) renderTopic(main, t);
+    else renderNew(main);
+    renderRail();
+    if (focusId === "topic-input" || focusId === "pw-input") {
+      var i = document.getElementById(focusId);
+      if (i) { i.focus(); try { i.setSelectionRange(selStart, selEnd); } catch (e) {} }
+    }
+  }
+
+  /* ---------- start ---------- */
+  async function init(retry){
+    if (!retry) { fallbackLocal(); render(); }
+    await loadRemote(false);
+    render();
+  }
+  init(false);
+  document.addEventListener("visibilitychange", function(){
+    if (document.visibilityState !== "visible" || store.mode !== "remote") return;
+    if (store.pending > 0 || Object.keys(state.busy).length) return;
+    loadRemote(true).then(render);
+  });
+})();
+</script>
+</body>
+</html>
